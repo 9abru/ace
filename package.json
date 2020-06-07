@@ -1,0 +1,23 @@
+{
+  "name": "ace",
+  "version": "1.0.0",
+  "description": "",
+  "main": "proxy.js",
+  "keywords": [
+    "ace",
+    "acestream",
+    "sopcast",
+    "docker",
+    "player",
+    "stream",
+    "video"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "debug": "^4.1.1"
+  }
+}

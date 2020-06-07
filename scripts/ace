@@ -1,0 +1,10 @@
+#http://10.1.2.127:9088/?chid=fecd83c98d6b7aeac0b0f0aec09a82c4745a74f2
+export DEBUG=*
+if test x"$1" != "x"
+then
+  aceport=$1
+else
+  aceport=${ACEPORT}
+fi
+echo "Listen Port: ${aceport}"
+node proxy.js -p ${aceport} -i /opt/acestream/${ACE_FILE}

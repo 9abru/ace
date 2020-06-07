@@ -1,0 +1,122 @@
+<html>
+  <head>
+    <title>embedded player</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/p2p-media-loader-core@latest/build/p2p-media-loader-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/p2p-media-loader-hlsjs@latest/build/p2p-media-loader-hlsjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/clappr-chromecast-plugin@latest/dist/clappr-chromecast-plugin.min.js"></script>
+  </head>
+  </body>
+    
+
+    <div class="input" style="display: flex; flex-direction: row">
+    <input class="source" style="width:80%"
+        value="http://127.0.0.1:6878/ace/manifest.m3u8?infohash=8877177777777777777777777777777777777777"/>
+    <button class="start">Start</button>
+    </div>
+  <div id="player"></div>
+    <div class="stats" style="display: flex; flex-direction: row">
+        <span>speed:</span><span class="speed"></span>
+        <span>;peers:</span><span class="peers"></span>
+        <span>;status:</span><span class="status"></span>
+        <span>;progress:</span><span class="prog"></span>
+    </div>
+
+  <script>
+    async function getStatsUrl(source) {
+        const url = `${source}&format=json&url=${encodeURIComponent(source)}`;
+        try {
+            const response = await fetch(url, {
+                method: 'GET', // or 'PUT'
+            });
+            const data = await response.json();
+            console.log('StatsUrl: Success:', data);
+            const { stat_url } = data.response || {};
+            return stat_url;
+        } catch (ex) {
+            console.error('Error:', ex);
+        }
+    }
+    async function getStats(url) {
+        console.log("Getting stats", url);
+        try {
+            const response = await fetch(url, {
+                method: 'GET', // or 'PUT'
+            });
+            const data = await response.json();
+            console.log('Stats Success:', data);
+            const { speed_down, peers, status, progress } = data.response || {};
+            const selm = document.querySelector(".stats");
+            selm.querySelector(".speed").innerHTML = speed_down+" Kb/s";
+            selm.querySelector(".peers").innerHTML = peers;
+
+            if (status === "dl") {
+                selm.querySelector(".status").innerHTML = status.replace("dl","  Online")
+            } else {
+                selm.querySelector(".prog").innerHTML = progress + " %";
+            }
+        } catch (ex) {
+            console.error('Error:', ex);
+        }
+    }
+    async function loadStats(source) {
+        const stat_url = await getStatsUrl(source);
+        if (stat_url) {
+            return setInterval(() => {
+              getStats(stat_url);
+            }, 3000);
+        }
+    }
+    const btnStart = document.querySelector(".start");
+    const inputSource = document.querySelector(".source");
+    function playVid() {
+        btnStart.disabled = true;
+        btnStart.removeEventListener('click', playVid);
+        inputSource.removeEventListener('keydown', onSourceEnter);
+        let timer = null;
+        const source = inputSource.value.trim();
+        const player = new Clappr.Player({
+            source: source,
+            plugins: [ChromecastPlugin],
+            media: {
+              type: ChromecastPlugin.Movie,
+              title: 'Player',
+              subtitle: 'Player'
+            },
+            parentId: "#player",
+            autoPlay: true, loop: true,
+            hlsRecoverAttempts: 32, preload: 'metadata',disableVideoTagContextMenu: true,
+            width: '95%', height: '95%', liveTimeout: 0, liveSyncDuration: 30,});
+        
+        player.on(Clappr.Events.PLAYER_PLAY, async err =>  {
+            if (timer) clearInterval(timer);
+            timer = null;
+            const ltimer = await loadStats(source);
+            if (timer) clearInterval(timer);
+            timer = ltimer;
+        });
+        player.on(Clappr.Events.PLAYER_STOP, err =>  {
+            if (timer) clearInterval(timer);
+            timer = null;
+        });
+        player.on(Clappr.Events.PLAYER_ERROR, err =>  {
+           if (err.code === 'hls:3') {
+               player.load(player.options.source)
+               player.play()
+            }
+        });
+    }
+    function onSourceEnter(evt) {
+        if (evt.keyCode == 13) {
+            playVid();
+            //code to execute here
+            return false;
+        }
+        return true;
+    }
+    btnStart.addEventListener('click', playVid);
+    inputSource.addEventListener('keydown', onSourceEnter);
+  </script>
+</body>
+</html>

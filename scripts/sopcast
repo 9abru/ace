@@ -1,0 +1,12 @@
+#http://10.1.2.127:9089/tv.asf
+#sp-sc sop://broker.sopcast.com:3912/259497 3902 9088
+if [ $# -gt 1 ]
+then
+  sopport=$1
+  shift
+else
+  sopport=${SOPPORT}
+fi
+echo "Running $1 on http://127.0.0.1:${sopport}/tv.asf"
+#sp-sc ${sopport} 3908 $1 > /dev/null
+sp-sc $1 3908 ${sopport}

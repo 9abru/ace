@@ -1,0 +1,4 @@
+.vscode
+*.m3u
+node_modules/
+package-lock.json
