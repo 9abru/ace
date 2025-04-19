@@ -15,6 +15,13 @@
         value="http://127.0.0.1:6878/ace/manifest.m3u8?infohash=8877177777777777777777777777777777777777"/>
     <button class="start">Start</button>
     </div>
+
+    <div class="video-player-container">
+      <video class="player-container-video" preload="auto"
+             controls playsinline
+             style="display: none"
+             webkit-playsinline></video>
+  </div>
   <div id="player"></div>
     <div class="stats" style="display: flex; flex-direction: row">
         <span>speed:</span><span class="speed"></span>
@@ -76,6 +83,13 @@
         inputSource.removeEventListener('keydown', onSourceEnter);
         let timer = null;
         const source = inputSource.value.trim();
+        if (source && source.endsWith(".mp4")) {
+            const myplayer = document.querySelector(".player-container-video");
+            myplayer.style.display = 'block';
+            myplayer.src = source;
+            myplayer.load();
+            return;
+        }
         const player = new Clappr.Player({
             source: source,
             plugins: [ChromecastPlugin],
